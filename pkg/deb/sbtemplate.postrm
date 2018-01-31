@@ -1,0 +1,7 @@
+#! /bin/bash
+echo "Running post removal script ..."
+
+PKG=sbtemplate
+if [ "$1" == "purge" ]; then
+        rm -rf "/var/lib/$PKG" "/etc/init.d/$PKG" "/etc/$PKG"
+fi

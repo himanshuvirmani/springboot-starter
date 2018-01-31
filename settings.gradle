@@ -1,0 +1,7 @@
+rootProject.name = 'springboot-template'
+
+include 'sbtemplate'
+
+include 'core'
+
+

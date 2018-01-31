@@ -1,0 +1,12 @@
+/var/log/company/sbtemplate/access.log {
+    maxsize 100M
+    daily
+    missingok
+    create 0664 XXXX XXXX
+    rotate 6
+    dateext
+    dateformat -%Y-%m-%d.%s
+    copytruncate
+    compress
+    su root XXXX
+}

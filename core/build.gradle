@@ -1,0 +1,44 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: spring_boot_version
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version: spring_boot_version
+    compile group: 'io.dropwizard.metrics', name: 'metrics-core', version: dropwizard_metrics_version
+    compile group: 'io.dropwizard.metrics', name: 'metrics-annotation', version: dropwizard_metrics_version
+    compile group: 'com.ryantenney.metrics', name: 'metrics-spring', version: '3.1.3'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-json-org', version: jackson_version
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-hppc', version: jackson_version
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: jackson_version
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-hibernate4', version: jackson_version
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jackson_version
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jackson_version
+    compile group: 'com.ning', name: 'async-http-client', version: '1.9.40'
+
+    compile(group: 'com.zaxxer', name: 'HikariCP', version: HikariCP_version) {
+        exclude(module: 'tools')
+    }
+    compile group: 'commons-io', name: 'commons-io', version: commons_io_version
+    compile group: 'joda-time', name: 'joda-time', version: joda_time_version
+    compile group: 'joda-time', name: 'joda-time-hibernate', version: joda_time_hibernate_version
+    compile group: 'org.projectlombok', name: 'lombok', version: lombok_version
+    compile(group: 'io.springfox', name: 'springfox-swagger2', version: springfox_version) {
+        exclude module: 'mapstruct'
+        exclude module: 'com.fasterxml.jackson.core'
+    }
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: springfox_version
+    compile "com.querydsl:querydsl-jpa:4.0.4"
+    querydslapt "com.querydsl:querydsl-apt:4.0.3:jpa"
+
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: spring_boot_version
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version: spring_boot_version
+    testCompile group: 'org.assertj', name: 'assertj-core', version: assertj_core_version
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}

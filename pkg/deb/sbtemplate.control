@@ -1,0 +1,10 @@
+Package: sbtemplate
+Section: web
+Priority: Optional
+Architecture: all
+Essential: no
+Depends: oracle-j2sdk1.8
+Installed-Size: 1000
+Maintainer: Company Company@company.com
+Description: sbtemplate
+Version: VERSION

@@ -1,0 +1,16 @@
+server:
+    port: 11111
+
+async:
+    corePoolSize: 2
+    maxPoolSize: 50
+    queueCapacity: 10000
+
+swagger:
+    title: Template
+    reason: Billing and Control
+    version: 0.0.1
+    termsOfServiceUrl:
+    contact:
+    license: Apache 2.0
+    licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.html

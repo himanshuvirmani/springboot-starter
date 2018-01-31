@@ -1,0 +1,26 @@
+apply plugin: 'spring-boot'
+
+ext {
+    logbackLoglevel = "INFO"
+    logpath = "/var/log/company/sbtemplate"
+}
+
+bootRun {
+    args = ["--spring.profiles.active=prod"]
+}
+
+processResources {
+    filesMatching('**/logback.xml') {
+        filter {
+            it.replace('${logback.loglevel}', logbackLoglevel)
+                    .replace('${logback.logpath}', logpath)
+        }
+    }
+}
+
+task setProdProperties(dependsOn: bootRun) << {
+    doFirst {
+        System.setProperty('spring.profiles.active', 'prod')
+    }
+}
+

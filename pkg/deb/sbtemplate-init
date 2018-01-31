@@ -1,0 +1,130 @@
+#! /bin/bash
+PACKAGE=sbtemplate
+STATUSFILEPATH=public
+STATUSFILE=rotation_status.txt
+
+DATE_SUFFIX="_$(date +'%y-%m-%d-%H-%M')"
+
+GC_LOG_SBTEMPLATE=/var/log/company/$PACKAGE/$PACKAGE-gc.log
+
+JMX_PORT_SBTEMPLATE=11114
+
+SERV_NAME_SBTEMPLATE=sbtemplate
+
+SBTEMPLATE_SPRING_CONF=--spring.config.location
+
+SBTEMPLATE_PROFILE_CONF=--spring.profiles.active
+
+SBTEMPLATE_PROFILE_VALUE=`cat /etc/sbtemplate/company-profile`
+
+JMX_OPTS="-Dcom.sun.management.jmxremote.port=JMX_PORT -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+GC_OPTS="-Xloggc:GC_LOG -XX:+PrintGCDetails -XX:+PrintGCDateStamps -verbose:gc -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=1M"
+DEBUG_OPTS="-XX:ErrorFile=/tmp/hs_err_pid_SERV_NAME${DATE_SUFFIX}.log -XX:HeapDumpPath=/tmp/java_pid_SERV_NAME${DATE_SUFFIX}.hprof -XX:-HeapDumpOnOutOfMemoryError "
+
+SBTEMPLATE_OPTS="${JMX_OPTS//JMX_PORT/$JMX_PORT_SBTEMPLATE} ${DEBUG_OPTS//SERV_NAME/$SERV_NAME_SBTEMPLATE} ${GC_OPTS//GC_LOG/$GC_LOG_SBTEMPLATE}"
+
+take_oor() {
+    echo "Taking $PACKAGE Out Of Rotation..."
+    cd /var/lib/$PACKAGE
+    mv $STATUSFILEPATH/$STATUSFILE $STATUSFILEPATH/old-$STATUSFILE
+    echo "Removed status file for OOR"
+    echo "Sleeping for 5 secs"
+    sleep 5
+}
+
+get_bir() {
+    echo "Getting $PACKAGE Back In Rotation..."
+    cd /var/lib/$PACKAGE
+    echo "This application is up!" > $STATUSFILEPATH/$STATUSFILE
+    echo "Created status file for BIR"
+}
+
+get_status() {
+    if [ $(get_SBTEMPLATE_status 11111) -eq "200" ]
+    then
+        echo 0
+    else
+        echo 1
+    fi
+}
+
+get_SBTEMPLATE_status() {
+    port=$1
+    status=`curl -s -o /dev/null -I -w "%{http_code}" http://localhost:$port/health`
+    echo $status
+}
+
+start() {
+    echo "Starting $PACKAGE..."
+    ulimit -n 30000
+    cd /var/lib/$PACKAGE/
+    java $SBTEMPLATE_OPTS -jar sbtemplate-shaded.jar $SBTEMPLATE_PROFILE_CONF=$SBTEMPLATE_PROFILE_VALUE $SBTEMPLATE_SPRING_CONF=/etc/$PACKAGE/ > /dev/null 2>&1 &
+    status=$?
+    if [ "$status" -eq "0" ]
+    then
+        echo "..."
+    else
+        echo "sbtemplate Startup failed with status code $status"
+        exit
+    fi
+    num=10
+    while [ $(get_status) != "0" ]; do
+        sleep 10
+        echo "Waiting for successful ping from sbtemplate application...$num sec"
+        num=`expr $num + 10`
+    done
+
+    echo "Started $PACKAGE."
+}
+
+stop() {
+    pkill -TERM -f sbtemplate-shaded.jar
+    sleep 5
+    echo "Stopped $PACKAGE."
+}
+
+force_kill() {
+    pkill -KILL -f sbtemplate-shaded.jar
+    echo "Force killed $PACKAGE."
+}
+
+restart() {
+    take_oor
+    stop
+    get_bir
+    start
+}
+
+case "$1" in
+	start)
+        start
+	;;
+	stop)
+		stop
+	;;
+	force_kill)
+	    force_kill
+	;;
+	restart)
+        restart
+    ;;
+    	OOR)
+        take_oor
+	;;
+	BIR)
+    	get_bir
+    ;;
+    status)
+        if [ $(get_status) -eq "0" ]
+        then
+            echo "Running"
+        else
+            echo "Stopped"
+            exit 1
+        fi
+    ;;
+	*)
+		echo "USAGE: $0 start | stop | restart | OOR |BIR | status"
+		exit 3
+	;;
+esac

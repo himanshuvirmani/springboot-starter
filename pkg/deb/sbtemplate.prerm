@@ -1,0 +1,9 @@
+#! /bin/bash
+echo "Running pre removal script ..."
+
+PKG=sbtemplate
+
+if [ -f /etc/init.d/$PKG ];then
+  bash /etc/init.d/$PKG stop
+  echo "Stopped the $PKG server"
+fi
